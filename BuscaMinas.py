@@ -5,7 +5,7 @@ import random
 class DialogoPC(tk.Toplevel):
     def __init__(self, parent, r, c, motivo, valores_posibles, permite_mina):
         super().__init__(parent)
-        self.title("Turno de la Máquina (Tú)")
+        self.title("(Tú)")
         
         # Posicionar paralela a la principal
         parent.update_idletasks()
@@ -21,18 +21,18 @@ class DialogoPC(tk.Toplevel):
 
         self.resultado = None
 
-        tk.Label(self, text=f"La IA seleccionó la casilla ({r}, {c})", font=("Arial", 12, "bold")).pack(pady=10)
-        tk.Label(self, text=f"Motivo de la IA: {motivo}").pack()
-        tk.Label(self, text=f"Valores lógicos posibles: {valores_posibles}").pack()
+        tk.Label(self, text=f"Posición IA ({r}, {c})", font=("Arial", 12, "bold")).pack(pady=10)
+        tk.Label(self, text=f"Lógica IA: {motivo}").pack()
+        tk.Label(self, text=f"Opciones Disponibles: {valores_posibles}").pack()
 
         frame_num = tk.Frame(self)
         frame_num.pack(pady=5)
         
-        tk.Label(frame_num, text="Ingresa el número de minas vecinas:", font=("Arial", 10)).pack()
+        tk.Label(frame_num, text="Ingresar número de minas", font=("Arial", 10)).pack()
         
         estado_entry = "normal"
         if len(valores_posibles) == 1:
-            tk.Label(frame_num, text="(Única opción lógica disponible, no se puede cambiar)", fg="gray", font=("Arial", 8)).pack()
+            tk.Label(frame_num, text="(Única opción lógica disponible)", fg="gray", font=("Arial", 8)).pack()
             estado_entry = "readonly"
 
         self.var_num = tk.StringVar(value=str(valores_posibles[0]) if valores_posibles else "0")
@@ -45,15 +45,15 @@ class DialogoPC(tk.Toplevel):
                             state=estado_entry, relief="solid", bd=2, readonlybackground="#f0f0f0")
         entr_num.pack(side=tk.LEFT, padx=10)
         
-        btn_num = tk.Button(row_frame, text="Revelar Número", font=("Arial", 10, "bold"), bg="#a5d6a7", cursor="hand2", command=self.revelar_numero)
+        btn_num = tk.Button(row_frame, text="OK", font=("Arial", 10, "bold"), bg="#a5d6a7", cursor="hand2", command=self.revelar_numero)
         btn_num.pack(side=tk.LEFT, padx=5)
 
-        btn_mina = tk.Button(self, text="¡Es una mina! 💥", font=("Arial", 12, "bold"), bg="#ffadad", cursor="hand2", command=self.es_mina)
+        btn_mina = tk.Button(self, text="¡MINA! X", font=("Arial", 12, "bold"), bg="#ffadad", cursor="hand2", command=self.es_mina)
         btn_mina.pack(pady=10)
 
         if not permite_mina:
             btn_mina.config(state="disabled")
-            tk.Label(self, text="(La IA dedujo que aquí es seguro. No puedes mentir.)", fg="red", font=("Arial", 8)).pack()
+            tk.Label(self, text="(Zona Segura)", fg="red", font=("Arial", 8)).pack()
 
         self.protocol("WM_DELETE_WINDOW", self.cerrar)
 
@@ -76,7 +76,7 @@ class DialogoPC(tk.Toplevel):
 class BuscaminasExperto:
     def __init__(self, root):
         self.root = root
-        self.root.title("Buscaminas")
+        self.root.title("Buscaminas IA")
         self.filas = 10
         self.columnas = 10
         
@@ -107,13 +107,10 @@ class BuscaminasExperto:
     def iniciar_juego(self):
         # Escoger una primera casilla al azar
         r, c = random.randint(0, 9), random.randint(0, 9)
-        self.pedir_dato(r, c, "Primer movimiento (Seguro)")
+        self.pedir_dato(r, c, "Primer movimiento (Aleatorio)")
 
     def casilla_puede_ser_segura(self, r, c):
-        """
-        Verifica si revelar (r, c) como casilla segura no rompe
-        las restricciones de los números vecinos ya revelados.
-        """
+
         for vr, vc in self.obtener_vecinos(r, c):
             val = self.tablero_ia[vr][vc]
             if isinstance(val, int):
@@ -131,10 +128,7 @@ class BuscaminasExperto:
         return True
 
     def colocacion_mina_valida(self, r, c):
-        """
-        Verifica si (r, c) puede marcarse como mina sin exceder
-        el valor de ningun numero vecino.
-        """
+
         for vr, vc in self.obtener_vecinos(r, c):
             val = self.tablero_ia[vr][vc]
             if isinstance(val, int):
@@ -145,10 +139,7 @@ class BuscaminasExperto:
         return True
 
     def tablero_consistente(self):
-        """
-        Comprueba que para cada numero revelado se cumpla:
-        banderas <= valor <= banderas + ocultas.
-        """
+
         for r in range(self.filas):
             for c in range(self.columnas):
                 val = self.tablero_ia[r][c]
@@ -163,10 +154,7 @@ class BuscaminasExperto:
         return True
 
     def valores_posibles_casilla(self, r, c):
-        """
-        Calcula los valores validos para (r, c) verificando
-        consistencia global del tablero.
-        """
+
         vecinos_objetivo = self.obtener_vecinos(r, c)
         flags_objetivo = sum(1 for vr, vc in vecinos_objetivo if self.tablero_ia[vr][vc] == 'M')
         vars_objetivo = {(vr, vc) for vr, vc in vecinos_objetivo if self.tablero_ia[vr][vc] is None}
@@ -281,7 +269,7 @@ class BuscaminasExperto:
     def restaurar_estilo_casilla(self, r, c):
         estado = self.tablero_ia[r][c]
         if estado == 'M':
-            self.botones[r][c].config(text="🚩", bg="#ffadad", fg="black", relief="raised")
+            self.botones[r][c].config(text="#", bg="#ffadad", fg="black", relief="raised")
         elif estado == 'S':
             self.botones[r][c].config(text="", bg="#d9fdd3", fg="black", relief="raised")
         elif isinstance(estado, int):
@@ -321,8 +309,8 @@ class BuscaminasExperto:
                 
             if res["tipo"] == "mina":
                 self.tablero_ia[r][c] = 'X'
-                self.botones[r][c].config(text="💥", bg="#ff3333", fg="black", relief="raised")
-                messagebox.showinfo("¡Has Ganado!", "¡La IA ha pisado una mina!\nComo PC, has ganado la partida.")
+                self.botones[r][c].config(text="X", bg="#ff3333", fg="black", relief="raised")
+                messagebox.showinfo("¡Has Ganado!", "¡La IA ha pisado una mina!")
                 return # Detiene el analisis
 
             num = res["valor"]
@@ -331,7 +319,7 @@ class BuscaminasExperto:
             if num not in valores_posibles:
                 messagebox.showerror(
                     "Error",
-                    f"Valor incorrecto. Para esta casilla solo se permite: {valores_posibles}."
+                    f"Valor incorrecto. Opciones disponibles: {valores_posibles}."
                 )
                 self.restaurar_estilo_casilla(r, c)
                 self.root.after(300, lambda: self.pedir_dato(r, c, motivo))
@@ -341,7 +329,7 @@ class BuscaminasExperto:
             # entonces esta casilla debía ser mina.
             if not self.casilla_puede_ser_segura(r, c):
                 self.tablero_ia[r][c] = 'M'
-                self.botones[r][c].config(text="🚩", bg="#ffadad", fg="black")
+                self.botones[r][c].config(text="#", bg="#ffadad", fg="black")
                 messagebox.showwarning(
                     "Corrección lógica",
                     f"La casilla ({r}, {c}) no puede ser segura por restricciones vecinas.\n"
@@ -370,7 +358,7 @@ class BuscaminasExperto:
             self.analizar_tablero()
         except Exception as exc:
             # Evita que se cierre la app por errores inesperados de lógica.
-            messagebox.showerror("Error interno", f"Ocurrió un error y el juego continúa:\n{exc}")
+            messagebox.showerror("Error interno", f"Ocurrió un error,continúar:\n{exc}")
             self.restaurar_estilo_casilla(r, c)
 
     def analizar_tablero(self):
@@ -397,7 +385,7 @@ class BuscaminasExperto:
                             for vr, vc in ocultos:
                                 if self.colocacion_mina_valida(vr, vc):
                                     self.tablero_ia[vr][vc] = 'M'
-                                    self.botones[vr][vc].config(text="🚩", bg="#ffadad", fg="black")
+                                    self.botones[vr][vc].config(text="#", bg="#ffadad", fg="black")
                                     hubo_cambio = True
 
         # 2. Destapar primero las casillas ya deducidas como seguras
@@ -451,7 +439,7 @@ class BuscaminasExperto:
             for mejor_casilla in candidatas:
                 if self.casilla_puede_ser_segura(mejor_casilla[0], mejor_casilla[1]):
                     min_riesgo = riesgos[mejor_casilla]
-                    self.pedir_dato(mejor_casilla[0], mejor_casilla[1], f"Probabilidad, Riesgo: {min_riesgo:.2f}")
+                    self.pedir_dato(mejor_casilla[0], mejor_casilla[1], f"Aleatorio, Riesgo: {min_riesgo:.2f}")
                     return
             # Si ninguna candidata puede ser segura, el estado actual del tablero es contradictorio.
             messagebox.showerror("Contradicción", "No hay jugadas seguras con el estado actual. Revisa los números ingresados.")
